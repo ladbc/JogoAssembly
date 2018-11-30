@@ -26,20 +26,22 @@ telaInstrucoes BYTE 219d, "                            OI OI OI, TUDO BEM?", 0ah
 
 telaCreditos BYTE 219d, "    JOGO FEITO TODO POR LELE DA CUNHA : )", 0 
 
-mapaJogo	BYTE 219d,"0000000000000000000000000000000000000",0ah, 0dh
+mapaJogo	BYTE 219d,"00000000000000000000000000000000000000000000000000000000000000000000000H0",0ah, 0dh
 			BYTE 219d,"00000000000000000000000000000000000000000000000000000000000000000000000H0",0ah, 0dh
 			BYTE 219d,"                                                                       H",0ah, 0dh
-			BYTE 219d,"                                                                       H",0ah, 0dh
-			BYTE 219d,"                                                             000000000000000000000000000000000000000",0ah, 0dh
+			BYTE 219d," ",0ah, 0dh
+			BYTE 219d,"                         0H0000000000000000000000000000000000000000000000000000000000000000000000000",0ah, 0dh
 			BYTE 219d,"                         0H0000000000000000000000000000000000000000000000000000000000000000000000000",0ah, 0dh
 			BYTE 219d,"                          H",0ah, 0dh
-			BYTE 219d,"                          H",0ah, 0dh
-			BYTE 219d,"0000000000000000000000000000000000000",0ah, 0dh
+			BYTE 219d," ",0ah, 0dh
+			BYTE 219d,"00000000000000000000000000000000000000000000000000000000000000000000000H0",0ah, 0dh
 			BYTE 219d,"00000000000000000000000000000000000000000000000000000000000000000000000H0",0ah, 0dh
 			BYTE 219d,"                                                                       H",0ah, 0dh
-			BYTE 219d,"                                                                       H",0ah, 0dh
+			BYTE 219d," ",0ah, 0dh
 			BYTE 219d,"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",0ah, 0dh
 			BYTE 219d,"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",0
+
+telaDerrota BYTE "Mas voce perdeu hein?!", 0
 
 contornoHori BYTE 223d, 0
 contornoVert BYTE 219d, 0
@@ -49,100 +51,194 @@ posicaoIndice BYTE 13, 38
 
 desenhoProt BYTE 0ceh																											; Desenho do Protagonista 
 posicaoProt BYTE 18, 2																											; Posicao do Protagonista na tela
-escadaProt  BYTE 0																												; Indica para degrau da escada
 
 desenhoBarril BYTE 040h																											; Desenho Barril 
-posicaoBarril BYTE 5, 5																											; Posicao Barril
+posicaoBarril BYTE 18, 99																										; Posicao Barril
 
 pontos BYTE "Pontuacao: ",0
+numeroPontos BYTE 0
 vidas BYTE "Vidas: ", 0
+numeroVidas BYTE 3
+
+testeBarril WORD 0
 
 
 .code
 
 MoveBarril PROC
-		mov dh, [posicaoBarril]
-		mov dl, [posicaoBarril+1]
-		call Gotoxy
-		mov al, 40h
-		call WriteChar
-	comeco:	
-		call ReadKey
-		cmp al, 61h
-		jz final
-		mov dh, [posicaoBarril]
-		mov dl, [posicaoBarril+1]
-		call Gotoxy
+		mov eax, yellow
+		call SetTextColor			;Escreve o barril de amarelo na tela
+		mov dh, [posicaoBarril]		;Posicao na Linha do Barril
+		mov dl, [posicaoBarril+1]	;Posicao na Coluna do Barril
+		call Gotoxy					;Posiciona o cursor na posicao do Barril
 		mov al, 20h
-		call WriteChar 
-		inc [posicaoBarril+1]
-		mov dl, [posicaoBarril+1]
+		call WriteChar				;Apaga a escrita passada do barril na tela
+		dec [posicaoBarril+1]		;Decrementa posicao de Coluna do barril (move para esquerda)
+		mov dl, [posicaoBarril+1]	;Atualiza posicao de Coluna do barril 
 		call Gotoxy
 		mov al, 40h
-		call WriteChar
-		mov eax, 500
-		call Delay
-		jmp comeco
-	final:
+		call WriteChar				;Escreve barril na tela 
+		ret
 MoveBarril ENDP
 
 
 AndarProtagonista PROC
-		mov dh,	[posicaoProt]		; Linha
-		mov dl, [posicaoProt+1]		; Coluna
+		mov dh,	[posicaoProt]		;Posicao na Linha do protagonista
+		mov dl, [posicaoProt+1]		;Posicao na Coluna do protagonista
 		call Gotoxy	
-		mov eax, red
+		mov eax, red				;Escreve o personagem na cor vermelha 
 		call SetTextColor
-		mov al, 206
+		mov al, 206					;Escreve o caracter que representa o protagonista 
 		call WriteChar  
 	andar:
-		call ReadKey
-		cmp al, 61h
-		jz esq
-		cmp al, 77h
-		jz pulo
-		cmp al, 64h
-		jnz andar
-	dir:							; Andar para a direita
-		mov dh,	[posicaoProt]		; Linha
-		mov dl, [posicaoProt+1]		; Coluna
-		call Gotoxy
-		mov al, 20h
-		call WriteChar
-		inc [posicaoProt+1]
-		mov dl, [posicaoProt+1]
-		call Gotoxy
-		mov al, 206
-		call WriteChar
-		jmp andar
-	esq:
-		mov dh,	[posicaoProt]		; Linha
-		mov dl, [posicaoProt+1]		; Coluna
-		call Gotoxy
-		mov al, 20h
-		call WriteChar
-		dec [posicaoProt+1]
-		mov dl, [posicaoProt+1]
-		call Gotoxy
-		mov al, 206
-		call WriteChar
-		jmp andar
-	pulo:
+		cmp [testeBarril], 010000
+		jne leitura
+		mov [testeBarril], 0
+		call MoveBarril
 
-		mov dh,	[posicaoProt]		; Linha
-		mov dl, [posicaoProt+1]		; Coluna
-		call Gotoxy
+		mov al, [posicaoProt]
+		cmp [posicaoBarril], al
+		jne leitura
+		mov al, posicaoProt+1
+		cmp [posicaoBarril+1], al
+		jne leitura
+		mov dh, 24
+		mov dl, 30
+		call GotoXY
+		mov edx, OFFSET[telaDerrota]
+		call WriteString
+
+	leitura:
+		call ReadKey				;Le entreda do usuario
+		inc [testeBarril]
+		cmp al, 61h
+		je esq						;Se 'a' move o personagem para a esquerda
+		cmp al, 77h
+		je pulo						;Se 'w' realiza o pulo ou subida de escada 
+		cmp al, 64h
+		je dir						;Se 'd' move o personagem para a direita
+		cmp al, 73h
+		jne andar					;Se 's' realiza a descida da escada 
+		
+	;Descida das escadas
+
+		mov dh, [posicaoProt]
+		mov dl, [posicaoProt+1]
+		call GotoXY					;Posiciona o cursor na posicao do protagonista
 		mov al, 20h
+		call WriteChar				;Apaga o que esta escrito na posicao do protagonista
+		cmp dl, 27					;Se na coluna da escada pode continuar o teste
+		jne outradesce				;Se nao for deve saber se esta na coluna da outra escada
+		cmp dh, 10					;Se na linha da escada tambem a descida deve ocorrer 
+		je queda
+	outradesce:
+		cmp dl, 72					;Se na coluna das duas outras escadas pode continuar
+		jne andar					;Se em nenhuma das escadas deve ler outra entrada do usuario
+		cmp dh, 6					;Se na escada superior pode continuar
+		je queda
+		cmp dh,14					;Se na escada inferior pode continuar
+		je queda
+		jmp andar					;Se em nenhuma das escadas deve ler outra entrada do usuario
+
+	;Movimentacao para direita
+
+	dir:						
+		mov dh,	[posicaoProt]		;Posicao na Linha do protagonista
+		mov dl, [posicaoProt+1]		;Posicao na Coluna do protagonista
+		cmp dl, 100					;Se no limite direito do mapa deve ler outra entrada do usuario
+		je andar
+		call Gotoxy					;Posiciona o cursor na posicao atual do Protagonista
+		mov al, 20h					
+		call WriteChar				;Apaga o que esta escrito na posicao do Protagonista
+		inc [posicaoProt+1]			;Adiciona 1 ao indice de posicao na coluna do Protagonista 
+		mov dl, [posicaoProt+1]		;Atualiza a posicao do cursor para o Protagonista 
+		cmp dl, 74					;Testa se esta na posicao do limite direito da plataforma atual 
+		jne andardireita			;Caso nao, deve andar o Protagonista para a direita 
+		cmp dh, 6					;Testa se esta na plataforma superior
+		je queda					;Deve realizar a queda do protagonista
+		cmp dh, 14					;Testa se esta na pataforma inferior 
+		je queda					;Deve realizar a queda do protagonista 
+	andardireita:
+		call Gotoxy
+		mov eax, red				;Escreve o personagem na cor vermelha 
+		call SetTextColor
+		mov al, 206					;Atualiza a posicao do Protagonista na tela 
 		call WriteChar
+		jmp andar					;Le uma nova entrada de teclado do usuario
+
+	;Movimentacao para a esquerda
+
+	esq:
+		mov dh,	[posicaoProt]		;Posicao na Linha do protagonista
+		mov dl, [posicaoProt+1]		;Posicao na Coluna do protagonista
+		cmp dl, 2					;Se no limite esquerdo do mapa deve ler outra entrada do usuario
+		je andar
+		call Gotoxy					;Posiciona o cursor na posicao atual do Protagonista
+		mov al, 20h
+		call WriteChar				;Apaga o que esta escrito na posicao do Protagonista
+		dec [posicaoProt+1]			;Subtrai 1 ao indice de posicao na coluna do Protagonista
+		mov dl, [posicaoProt+1]		;Atualiza a posicao do cursor para o Protagonista 
+		cmp dl, 25					;Testa se esta na posicao do limite esquerdo da plataforma atual 
+		jne andaresquerda			;Caso nao, deve andar o Protagonista para a esquerda
+		cmp dh, 10					;Testa se esta na plataforma do meio
+		je queda					;Deve realizar a queda do protagonista
+	andaresquerda:
+		mov dl, [posicaoProt+1]
+		call Gotoxy					;Atualiza a posicao do Protagonista na tela
+		mov eax, red				;Escreve o personagem na cor vermelha 
+		call SetTextColor
+		mov al, 206
+		call WriteChar
+		jmp andar					;Le uma nova entrada de teclado do usuario
+
+	;Queda de plataforma ou descida da escada pelo Protagonista 
+
+	queda:							
+		add [posicaoProt],4			;Incrementa a posicao de linha do Protagonista em 4
+		mov dh, [posicaoProt]		;Atualiza a posicao do cursor para o Protagonista
+		call GotoXY					;Atualiza a posicao do Protagonista na tela 
+		mov eax, red				;Escreve o personagem na cor vermelha 
+		call SetTextColor
+		mov al, 206
+		call WriteChar
+		jmp andar					;Le uma nova entrada de teclado do usuario
+
+	;Pulo ou subida na escada pelo Protagonista 
+
+	pulo:
+		mov dh,	[posicaoProt]		;Posicao na Linha do protagonista
+		mov dl, [posicaoProt+1]		;Posicao na Coluna do protagonista
+		call Gotoxy					;Posiciona o cursor na posicao do protagonista
+		mov al, 20h
+		call WriteChar				;Apaga o que esta escrito na posicao do Protagonista
+		cmp dl, 27					;Se na coluna da escada pode continuar o teste
+		jne outrasobe				;Se nao for deve testar se esta na outra coluna 
+		cmp dh, 14					;Se esta na linha correta tambem da escada deve subir a plataforma
+		je subida
+	outrasobe:
+		cmp dl, 72					;Se na coluna da escada pode continuar o teste
+		jne desce
+		cmp dh, 18					;17 pois posicao ja foi decrementada
+		je subida
+		cmp dh, 10
+		jne desce
+	subida:
+		sub [posicaoProt], 4
+		mov dh, [posicaoProt]
+		call GotoXY
+		mov eax, red				;Escreve o personagem na cor vermelha 
+		call SetTextColor
+		mov al, 206
+		call WriteChar
+		jmp andar
+	desce:
 		dec [posicaoProt]
 		mov dh, [posicaoProt]
 		call Gotoxy
+		mov eax, red				;Escreve o personagem na cor vermelha 
+		call SetTextColor
 		mov al, 206
 		call WriteChar
-		cmp dl, 27					;Se na linha da escada pode subir
-		je andar
-		cmp dl, 72					;Se na linha da escada pode subir
-		je andar
 		mov eax, 500
 		call Delay
 		call Gotoxy
@@ -151,6 +247,8 @@ AndarProtagonista PROC
 		inc [posicaoProt]
 		mov dh, [posicaoProt]
 		call Gotoxy
+		mov eax, red				;Escreve o personagem na cor vermelha 
+		call SetTextColor
 		mov al, 206
 		call WriteChar
 		jmp andar
@@ -317,10 +415,20 @@ ImprimeTelas PROC
 		mov edx, OFFSET pontos
 		call WriteString
 		mov dh, 2
+		mov dl, 17
+		call GotoXY
+		mov al, [numeroPontos]
+		call WriteDec
+		mov dh, 2
 		mov dl, 80
 		call GotoXY
 		mov edx, OFFSET vidas
 		call WriteString
+		mov dh, 2
+		mov dl, 87
+		call GotoXY
+		mov al, [numeroVidas]
+		call WriteDec
 		mov dh, 7
 		mov dl, 0
 		call Gotoxy
