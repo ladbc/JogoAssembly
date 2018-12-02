@@ -203,7 +203,7 @@ AndarProtagonista PROC
 		mov al, 206					;Escreve o caracter que representa o protagonista 
 		call WriteChar  
 	andar:
-		cmp [testeBarril], 01000
+		cmp [testeBarril], 010000
 		jne leitura
 		mov [testeBarril], 0
 		call Pontuacao
