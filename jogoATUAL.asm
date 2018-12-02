@@ -4,6 +4,11 @@
 ;				   R.A.: 628190
 ; Desenvolvimento iniciado em 03/11/2018
 
+;COLOCAR SOM
+;COLOCAR MUITOS BARRIS mais ou menos 15
+;COLOCAR NÍVEIS 
+;ARRUMAR CONTEUDO DAS TELAS
+
 INCLUDE Irvine32.inc
 
 .data
@@ -25,19 +30,19 @@ telaInstrucoes BYTE 219d, "                            OI OI OI, TUDO BEM?", 0ah
 			   BYTE 219d, "                            AGORA TCHAU", 0
 
 telaCreditos BYTE 219d, "    JOGO FEITO TODO POR LELE DA CUNHA : )", 0 
-
+                                                                                                
 mapaJogo	BYTE 219d,"00000000000000000000000000000000000000000000000000000000000000000000000H0",0ah, 0dh
 			BYTE 219d,"00000000000000000000000000000000000000000000000000000000000000000000000H0",0ah, 0dh
 			BYTE 219d,"                                                                       H",0ah, 0dh
-			BYTE 219d," ",0ah, 0dh
+			BYTE 219d," ",0ah, 0dh            
 			BYTE 219d,"                         0H0000000000000000000000000000000000000000000000000000000000000000000000000",0ah, 0dh
 			BYTE 219d,"                         0H0000000000000000000000000000000000000000000000000000000000000000000000000",0ah, 0dh
 			BYTE 219d,"                          H",0ah, 0dh
-			BYTE 219d," ",0ah, 0dh
+			BYTE 219d," ",0ah, 0dh                                                               
 			BYTE 219d,"00000000000000000000000000000000000000000000000000000000000000000000000H0",0ah, 0dh
 			BYTE 219d,"00000000000000000000000000000000000000000000000000000000000000000000000H0",0ah, 0dh
 			BYTE 219d,"                                                                       H",0ah, 0dh
-			BYTE 219d," ",0ah, 0dh
+			BYTE 219d," ",0ah, 0dh 
 			BYTE 219d,"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",0ah, 0dh
 			BYTE 219d,"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",0
 
@@ -52,13 +57,16 @@ posicaoIndice BYTE 13, 38
 desenhoProt BYTE 0ceh																											; Desenho do Protagonista 
 posicaoProt BYTE 18, 2																											; Posicao do Protagonista na tela
 
-posicaoBarril BYTE 6, 10																										; Posicao Barril
-direcaoBarril BYTE 0
+
+; FOCO NO GABARITO
+gabaritoPosicaoBarril BYTE 6, 10
+posicaoBarril BYTE 6, 3, 6, -19, 6, -38, 6, -57																									; Posicao Barril
+direcaoBarril BYTE 0,0,0,0,0
 
 pontos BYTE "Pontuacao: ",0
 numeroPontos BYTE 0
 vidas BYTE "Vidas: ", 0
-numeroVidas BYTE 1
+numeroVidas BYTE 3
 
 testeBarril WORD 0
 
@@ -67,64 +75,107 @@ testeBarril WORD 0
 
 MoveBarril PROC
 		mov eax, yellow
-		call SetTextColor			;Escreve o barril de amarelo na tela
-		mov dh, [posicaoBarril]		;Posicao na Linha do Barril
-		mov dl, [posicaoBarril+1]	;Posicao na Coluna do Barril
-		call Gotoxy					;Posiciona o cursor na posicao do Barril
+		call SetTextColor				;Escreve o barril de amarelo na tela
+		mov ecx, 4
+		mov edi, 0
+		mov ebx, 0
+	
+	proximoBarril:
+		mov dh, [posicaoBarril+edi]		;Posicao na Linha do Barril
+		mov dl, [posicaoBarril+1+edi]	;Posicao na Coluna do Barril
+		call Gotoxy						;Posiciona o cursor na posicao do Barril
 		mov al, 20h
-		call WriteChar				;Apaga a escrita passada do barril na tela
+		call WriteChar					;Apaga a escrita passada do barril na tela
 
-		cmp [posicaoBarril], 18
+		cmp dl, 3
+		jge desenhoBarril
+		add [posicaoBarril+edi+1], 1
+		sub ecx, 1
+		cmp ecx, 0
+		je finalBarril	
+		add edi, 2
+		add ebx, 1
+
+	desenhoBarril:
+		cmp [posicaoBarril+edi], 18		;Checa se o obstaculo esta na ultima plataforma
 		jne continua
-		cmp [posicaoBarril+1], 1
-		jne continua
-		exit
+		cmp [posicaoBarril+1+edi], 1	;Checa se o obstaculo esta na ultima posicao possivel
+		jne continua	
+		;mov dl, 6
+		;mov dh, 10
+		;dec ecx
+		;cmp ecx, 0
+		;je finalBarril
+		;jmp proximoBarril
+		jmp finalBarril					;Caso na ultima posicao vai para o retorno
 
 	continua:
-		cmp [direcaoBarril], 0		;Se o indice for 0 obstaculo move para a direita
-		jne barrilEsquerda			;Caso contrario obstaculo move para a esquerda
+		cmp [direcaoBarril+ebx], 0			;Se o indice for 0 obstaculo move para a direita
+		jne barrilEsquerda				;Caso contrario obstaculo move para a esquerda
 
-		cmp [posicaoBarril+1], 74
+		cmp [posicaoBarril+1+edi], 74	;Checa se esta no limite direito da plataforma
 		jne ABarrilDireita
-		cmp [posicaoBarril], 6
+		cmp [posicaoBarril+edi], 6		;Checa se esta em um andar de limite direito
 		je quedaBarril
-		cmp [posicaoBarril], 14
-		je quedaBarril
+		cmp [posicaoBarril+edi], 14		;Checa se esta em um outro andar de limite direito
+		je quedaBarril					;Caso em um posicao de queda, deve cair 
 	ABarrilDireita:
-		inc [posicaoBarril+1]		;Decrementa posicao de Coluna do barril (move para esquerda)
-		mov dl, [posicaoBarril+1]	;Atualiza posicao de Coluna do barril 
+		inc [posicaoBarril+1+edi]		;Incrementa posicao de Coluna do barril (move para direita)
+		mov dl, [posicaoBarril+1+edi]	;Atualiza posicao de Coluna do barril 
 		call Gotoxy
 		mov al, 40h
-		call WriteChar				;Escreve barril na tela 
-		jmp finalBarril
+		call WriteChar					;Escreve barril na tela 
+		sub ecx, 1
+		cmp ecx, 0
+		je finalBarril	
+		add edi, 2
+		add ebx, 1
+		jmp proximoBarril
+		;jmp finalBarril					;Vai para o retorno
 
 	barrilEsquerda:
-		cmp [posicaoBarril+1], 25
+		cmp [posicaoBarril+1+edi], 25	;Checa se na posicao de coluna de queda
 		jne ABarrilEsquerda
-		cmp [posicaoBarril], 10
-		je quedaBarril
+		cmp [posicaoBarril+edi], 10		;Checa se o obstaculo esta em uma linha de queda
+		je quedaBarril					;Caso em posicao de queda, deve cair
 	ABarrilEsquerda:
-		dec [posicaoBarril+1]
-		mov dl, [posicaoBarril+1]
+		dec [posicaoBarril+1+edi]		;Decrementa posicao de coluna do barril (move para esquerda)
+		mov dl, [posicaoBarril+1+edi]	;Atualiza a posicao de coluna do barril
 		call GotoXY
 		mov al, 40h
-		call WriteChar
-		jmp finalBarril
+		call WriteChar					;Escreve o barril na tela
+		sub ecx, 1
+		cmp ecx, 0
+		je finalBarril	
+		add edi, 2
+		add ebx, 1
+		jmp proximoBarril
+		;jmp finalBarril					;Vai para o retorno
 
 	quedaBarril:
-		add [posicaoBarril],4		;Incrementa a posicao de linha do obstaculo em 4
-		mov dh, [posicaoBarril]		;Atualiza a posicao do cursor para o obstaculo
-		call GotoXY					;Atualiza a posicao do obstaculo na tela 
-		mov eax, yellow				;Escreve o obstaculo na cor amarela 
-		call SetTextColor
+		add [posicaoBarril+edi],4			;Incrementa a posicao de linha do obstaculo em 4
+		mov dh, [posicaoBarril+edi]			;Atualiza a posicao do cursor para o obstaculo
+		call GotoXY						;Atualiza a posicao do obstaculo na tela 
 		mov al, 40h
 		call WriteChar
-		cmp [direcaoBarril], 0
+		cmp [direcaoBarril+ebx], 0			;Se para a direita deve mover para a esquerda
 		jne outro
-		add [direcaoBarril], 1
-		jmp finalBarril
+		add [direcaoBarril+ebx], 1			
+		sub ecx, 1
+		cmp ecx, 0
+		je finalBarril	
+		add edi, 2
+		add ebx, 1
+		jmp proximoBarril
+		;jmp finalBarril					;Vai para o retorno
 	outro:
-		sub [direcaoBarril], 1
+		sub [direcaoBarril+ebx], 1			;Se para a esquerda deve mover para a direita
+		sub ecx, 1
+		cmp ecx, 0
+		je finalBarril	
+		add edi, 2
+		add ebx, 1
+		jmp proximoBarril
 
 	finalBarril:
 		ret
