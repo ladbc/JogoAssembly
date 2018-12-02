@@ -52,13 +52,13 @@ posicaoIndice BYTE 13, 38
 desenhoProt BYTE 0ceh																											; Desenho do Protagonista 
 posicaoProt BYTE 18, 2																											; Posicao do Protagonista na tela
 
-desenhoBarril BYTE 040h																											; Desenho Barril 
-posicaoBarril BYTE 18, 99																										; Posicao Barril
+posicaoBarril BYTE 6, 10																										; Posicao Barril
+direcaoBarril BYTE 0
 
 pontos BYTE "Pontuacao: ",0
 numeroPontos BYTE 0
 vidas BYTE "Vidas: ", 0
-numeroVidas BYTE 3
+numeroVidas BYTE 1
 
 testeBarril WORD 0
 
@@ -73,14 +73,126 @@ MoveBarril PROC
 		call Gotoxy					;Posiciona o cursor na posicao do Barril
 		mov al, 20h
 		call WriteChar				;Apaga a escrita passada do barril na tela
-		dec [posicaoBarril+1]		;Decrementa posicao de Coluna do barril (move para esquerda)
+
+		cmp [posicaoBarril], 18
+		jne continua
+		cmp [posicaoBarril+1], 1
+		jne continua
+		exit
+
+	continua:
+		cmp [direcaoBarril], 0		;Se o indice for 0 obstaculo move para a direita
+		jne barrilEsquerda			;Caso contrario obstaculo move para a esquerda
+
+		cmp [posicaoBarril+1], 74
+		jne ABarrilDireita
+		cmp [posicaoBarril], 6
+		je quedaBarril
+		cmp [posicaoBarril], 14
+		je quedaBarril
+	ABarrilDireita:
+		inc [posicaoBarril+1]		;Decrementa posicao de Coluna do barril (move para esquerda)
 		mov dl, [posicaoBarril+1]	;Atualiza posicao de Coluna do barril 
 		call Gotoxy
 		mov al, 40h
 		call WriteChar				;Escreve barril na tela 
+		jmp finalBarril
+
+	barrilEsquerda:
+		cmp [posicaoBarril+1], 25
+		jne ABarrilEsquerda
+		cmp [posicaoBarril], 10
+		je quedaBarril
+	ABarrilEsquerda:
+		dec [posicaoBarril+1]
+		mov dl, [posicaoBarril+1]
+		call GotoXY
+		mov al, 40h
+		call WriteChar
+		jmp finalBarril
+
+	quedaBarril:
+		add [posicaoBarril],4		;Incrementa a posicao de linha do obstaculo em 4
+		mov dh, [posicaoBarril]		;Atualiza a posicao do cursor para o obstaculo
+		call GotoXY					;Atualiza a posicao do obstaculo na tela 
+		mov eax, yellow				;Escreve o obstaculo na cor amarela 
+		call SetTextColor
+		mov al, 40h
+		call WriteChar
+		cmp [direcaoBarril], 0
+		jne outro
+		add [direcaoBarril], 1
+		jmp finalBarril
+	outro:
+		sub [direcaoBarril], 1
+
+	finalBarril:
 		ret
 MoveBarril ENDP
 
+Colisao PROC
+		mov al, [posicaoProt]
+		cmp [posicaoBarril], al
+		jne naoColidiu
+		mov al, posicaoProt+1
+		cmp [posicaoBarril+1], al
+		jne naoColidiu
+		call DecrementaVida
+	naoColidiu:
+		ret
+Colisao ENDP
+
+DecrementaVida PROC
+		cmp numeroVidas, 1
+		jne naoPerdeuJogo
+		call Clrscr
+		call ImprimeMoldura
+		mov dh, 10
+		mov dl, 30
+		call GotoXY
+		mov edx, OFFSET[telaDerrota]
+		call WriteString
+		mov eax, 02000
+		call Delay
+		mov eax, white
+		call LimpaTudo
+		call SetTextColor
+		call ImprimeTelas
+
+	naoPerdeuJogo:
+		dec [numeroVidas]
+		mov dh, 2
+		mov dl, 87
+		call GotoXY
+		mov eax, white
+		call SetTextColor
+		mov al, [numeroVidas]
+		call WriteDec
+		ret
+DecrementaVida ENDP
+
+LimpaTudo PROC
+		mov [numeroPontos], 0
+		mov [numeroVidas], 3
+		mov [posicaoProt], 18
+		mov [posicaoProt+1], 2
+		mov [posicaoBarril], 6
+		mov [posicaoBarril+1], 10
+		mov [direcaoBarril], 0
+		ret
+LimpaTudo ENDP
+
+Pontuacao PROC
+		inc [numeroPontos]
+		mov dh, 2
+		mov dl, 17
+		call GotoXY
+		mov eax, white
+		call SetTextColor
+		mov al, [numeroPontos]
+		call WriteDec
+		ret
+Pontuacao ENDP
 
 AndarProtagonista PROC
 		mov dh,	[posicaoProt]		;Posicao na Linha do protagonista
@@ -91,22 +203,13 @@ AndarProtagonista PROC
 		mov al, 206					;Escreve o caracter que representa o protagonista 
 		call WriteChar  
 	andar:
-		cmp [testeBarril], 010000
+		cmp [testeBarril], 01000
 		jne leitura
 		mov [testeBarril], 0
+		call Pontuacao
 		call MoveBarril
+		call Colisao
 
-		mov al, [posicaoProt]
-		cmp [posicaoBarril], al
-		jne leitura
-		mov al, posicaoProt+1
-		cmp [posicaoBarril+1], al
-		jne leitura
-		mov dh, 24
-		mov dl, 30
-		call GotoXY
-		mov edx, OFFSET[telaDerrota]
-		call WriteString
 
 	leitura:
 		call ReadKey				;Le entreda do usuario
@@ -239,13 +342,19 @@ AndarProtagonista PROC
 		call SetTextColor
 		mov al, 206
 		call WriteChar
-		mov eax, 500
+		mov eax, 700
 		call Delay
+		call MoveBarril
+		mov eax, 700
+		call Delay
+		mov dh, [posicaoProt]
+		mov dl, [posicaoProt+1]
 		call Gotoxy
 		mov al, 20h
 		call WriteChar
 		inc [posicaoProt]
 		mov dh, [posicaoProt]
+		mov dl, [posicaoProt+1]
 		call Gotoxy
 		mov eax, red				;Escreve o personagem na cor vermelha 
 		call SetTextColor
@@ -469,7 +578,6 @@ main PROC
 	
 	call ImprimeTelas
 	call AndarProtagonista
-
 
 	exit
 main ENDP 
