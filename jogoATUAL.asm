@@ -36,7 +36,7 @@ telaInstrucoes           BYTE 219d, "     			  Oi, obrigada por jogar Assembly K
 			 BYTE 219d, "                                 's' = descer ou descer escada", 0ah, 0dh
 			 BYTE 219d, "                                 'd' = andar para a direita ", 0ah, 0dh
 			 BYTE 219d, " ", 0ah, 0dh
-			 BYTE 219d, "                                          BOA SORTE :) ", 0ah, 0dh
+			 BYTE 219d, "                                          BOA SORTE :) ", 0
 
 telaCreditos BYTE " Jogo feito completamente por Leticia Amaral da Cunha : )", 0 
                                                                                                 
