@@ -24,12 +24,21 @@ telaEscolha	 BYTE 219d, "                                       1 - Inicar Jogo"
 			 BYTE 219d, "                                       4 - Sair", 0ah, 0dh
 			 BYTE 219d, "                                  Aperte espaco para selecionar", 0
 
-telaInstrucoes BYTE 219d, "                            OI OI OI, TUDO BEM?", 0ah, 0dh
-			   BYTE 219d, "                            EU SOU O JOGUINHO ASSEMBLY KONG", 0ah, 0dh
-			   BYTE 219d, "                            POR ENQUANTO EU SO TENHO ISSO MESMO", 0ah, 0dh
-			   BYTE 219d, "                            AGORA TCHAU", 0
+telaInstrucoes           BYTE 219d, "     			  Oi, obrigada por jogar Assembly Kong?", 0ah, 0dh
+			 BYTE 219d, "			    Mas voce nao sabe jogar? Eu te ensino!! Eh legal!!", 0ah, 0dh
+			 BYTE 219d, " ", 0ah, 0dh
+			 BYTE 219d, "	 	O seu objetivo eh chegar no canto superior esquerdo da tela e derrorar o Assembly ", 0ah, 0dh
+			 BYTE 219d, "		     Para isso voce vai ter que subir plataformas e pular obstaculos, radical! ", 0ah, 0dh
+			 BYTE 219d, " ", 0ah, 0dh
+			 BYTE 219d, "                       Nesse jogo voce vai usar as teclas 'w','a','s','d'", 0ah, 0dh
+			 BYTE 219d, "                                 'w' = subir, subir escadas ou pular", 0ah, 0dh
+			 BYTE 219d, "                                 'a' = andar para a esquerda", 0ah, 0dh
+			 BYTE 219d, "                                 's' = descer ou descer escada", 0ah, 0dh
+			 BYTE 219d, "                                 'd' = andar para a direita ", 0ah, 0dh
+			 BYTE 219d, " ", 0ah, 0dh
+			 BYTE 219d, "                                          BOA SORTE :) ", 0ah, 0dh
 
-telaCreditos BYTE 219d, "    JOGO FEITO TODO POR LELE DA CUNHA : )", 0 
+telaCreditos BYTE " Jogo feito completamente por Leticia Amaral da Cunha : )", 0 
                                                                                                 
 mapaJogo	BYTE 219d,"00000000000000000000000000000000000000000000000000000000000000000000000H0",0ah, 0dh
 			BYTE 219d,"00000000000000000000000000000000000000000000000000000000000000000000000H0",0ah, 0dh
@@ -46,7 +55,19 @@ mapaJogo	BYTE 219d,"000000000000000000000000000000000000000000000000000000000000
 			BYTE 219d,"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",0ah, 0dh
 			BYTE 219d,"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",0
 
-telaDerrota BYTE "Mas voce perdeu hein?!", 0
+telaDerrota		BYTE 219D, " _     _ _______ _______ _______    ______ _______ ______  ______  _______ _     _", 0ah, 0dh
+			BYTE 219d, "(_)   (_|_______|_______|_______)  (_____ (_______|_____ \(______)(_______|_)   (_)", 0ah, 0dh
+			BYTE 219d, " _     _ _     _ _       _____      _____) )____   _____) )_     _ _____   _     _ ", 0ah, 0dh
+			BYTE 219d, "| |   | | |   | | |     |  ___)    |  ____/  ___) |  __  /| |   | |  ___) | |   | |", 0ah, 0dh
+			BYTE 219d, " \ \ / /| |___| | |_____| |_____   | |    | |_____| |  \ \| |__/ /| |_____| |___| |", 0ah, 0dh
+			BYTE 219d, "  \___/  \_____/ \______)_______)  |_|    |_______)_|   |_|_____/ |_______)\_____/ ", 0
+			
+telaVitoria		BYTE 219D, " _     _ _______ _______ _______    _______ _______ _______ _     _ _______ _     _", 0ah, 0dh
+			BYTE 219d, "(_)   (_|_______|_______|_______)  (_______|_______|_______|_)   (_|_______|_)   (_)", 0ah, 0dh
+			BYTE 219d, " _     _ _     _ _       _____      _   ___ _______ _     _ _______ _     _ _     _ ", 0ah, 0dh
+			BYTE 219d, "| |   | | |   | | |     |  ___)    | | (_  |  ___  | |   | |  ___  | |   | | |   | |", 0ah, 0dh
+			BYTE 219d, " \ \ / /| |___| | |_____| |_____   | |___) | |   | | |   | | |   | | |___| | |___| |", 0ah, 0dh
+			BYTE 219d, "  \___/  \_____/ \______)_______)   \_____/|_|   |_|_|   |_|_|   |_|\_____/ \_____/ ", 0
 
 contornoHori BYTE 223d, 0
 contornoVert BYTE 219d, 0
@@ -193,20 +214,40 @@ Colisao PROC
 		ret
 Colisao ENDP
 
-DecrementaVida PROC
-		cmp numeroVidas, 1
-		jne naoPerdeuJogo
+TelaDerrota PROC
 		call Clrscr
+		mov eax, red
+		call SetTextColor
 		call ImprimeMoldura
-		mov dh, 10
-		mov dl, 30
+		mov dh, 7
+		mov dl, 0
 		call GotoXY
 		mov edx, OFFSET[telaDerrota]
 		call WriteString
+		ret
+TelaDerrota ENDP
+
+TelaVitoria PROC
+		call Clrscr
+		mov eax, blue
+		call SetTextColor
+		call ImprimeMoldura
+		mov dh, 7
+		mov dl, 0
+		call GotoXY
+		mov edx, OFFSET[telaVitoria]
+		call WriteString
+		ret
+TelaVitoria ENDP
+
+DecrementaVida PROC
+		cmp numeroVidas, 1
+		jne naoPerdeuJogo
+		call TelaDerrota
 		mov eax, 02000
 		call Delay
-		mov eax, white
 		call LimpaTudo
+		mov eax, white
 		call SetTextColor
 		call ImprimeTelas
 
@@ -594,6 +635,7 @@ ImprimeTelas PROC
 		call Gotoxy
 		mov edx, OFFSET mapaJogo
 		call WriteString
+		call AndarProtagonista
 		ret
 	ImprimeInstrucoes:
 		mov eax, white
@@ -628,7 +670,6 @@ ImprimeTelas ENDP
 main PROC	
 	
 	call ImprimeTelas
-	call AndarProtagonista
 
 	exit
 main ENDP 
