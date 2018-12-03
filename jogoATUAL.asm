@@ -24,11 +24,11 @@ telaEscolha	 BYTE 219d, "                                       1 - Inicar Jogo"
 			 BYTE 219d, "                                       4 - Sair", 0ah, 0dh
 			 BYTE 219d, "                                  Aperte espaco para selecionar", 0
 
-telaInstrucoes           BYTE 219d, "     			  Oi, obrigada por jogar Assembly Kong?", 0ah, 0dh
-			 BYTE 219d, "			    Mas voce nao sabe jogar? Eu te ensino!! Eh legal!!", 0ah, 0dh
+telaInstrucoes	BYTE 219d, "     			        Oi, obrigada por jogar Assembly Kong?", 0ah, 0dh
+				BYTE 219d, "			     Mas voce nao sabe jogar? Eu te ensino!! Eh legal!!", 0ah, 0dh
 			 BYTE 219d, " ", 0ah, 0dh
-			 BYTE 219d, "	 	O seu objetivo eh chegar no canto superior esquerdo da tela e derrorar o Assembly ", 0ah, 0dh
-			 BYTE 219d, "		     Para isso voce vai ter que subir plataformas e pular obstaculos, radical! ", 0ah, 0dh
+			 BYTE 219d, "	O seu objetivo eh chegar no canto superior esquerdo da tela e derrotar o Assembly ", 0ah, 0dh
+			 BYTE 219d, "	     Para isso voce vai ter que subir plataformas e pular obstaculos, radical! ", 0ah, 0dh
 			 BYTE 219d, " ", 0ah, 0dh
 			 BYTE 219d, "                       Nesse jogo voce vai usar as teclas 'w','a','s','d'", 0ah, 0dh
 			 BYTE 219d, "                                 'w' = subir, subir escadas ou pular", 0ah, 0dh
@@ -55,12 +55,12 @@ mapaJogo	BYTE 219d,"000000000000000000000000000000000000000000000000000000000000
 			BYTE 219d,"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",0ah, 0dh
 			BYTE 219d,"0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",0
 
-telaDerrota		BYTE 219D, " _     _ _______ _______ _______    ______ _______ ______  ______  _______ _     _", 0ah, 0dh
-			BYTE 219d, "(_)   (_|_______|_______|_______)  (_____ (_______|_____ \(______)(_______|_)   (_)", 0ah, 0dh
-			BYTE 219d, " _     _ _     _ _       _____      _____) )____   _____) )_     _ _____   _     _ ", 0ah, 0dh
-			BYTE 219d, "| |   | | |   | | |     |  ___)    |  ____/  ___) |  __  /| |   | |  ___) | |   | |", 0ah, 0dh
-			BYTE 219d, " \ \ / /| |___| | |_____| |_____   | |    | |_____| |  \ \| |__/ /| |_____| |___| |", 0ah, 0dh
-			BYTE 219d, "  \___/  \_____/ \______)_______)  |_|    |_______)_|   |_|_____/ |_______)\_____/ ", 0
+telaDerrota		BYTE 219D, "    _     _ _______ _______ _______    ______ _______ ______  ______  _______ _     _", 0ah, 0dh
+			BYTE 219d, "   (_)   (_|_______|_______|_______)  (_____ (_______|_____ \(______)(_______|_)   (_)", 0ah, 0dh
+			BYTE 219d, "    _     _ _     _ _       _____      _____) )____   _____) )_     _ _____   _     _ ", 0ah, 0dh
+			BYTE 219d, "   | |   | | |   | | |     |  ___)    |  ____/  ___) |  __  /| |   | |  ___) | |   | |", 0ah, 0dh
+			BYTE 219d, "    \ \ / /| |___| | |_____| |_____   | |    | |_____| |  \ \| |__/ /| |_____| |___| |", 0ah, 0dh
+			BYTE 219d, "     \___/  \_____/ \______)_______)  |_|    |_______)_|   |_|_____/ |_______)\_____/ ", 0
 			
 telaVitoria		BYTE 219D, " _     _ _______ _______ _______    _______ _______ _______ _     _ _______ _     _", 0ah, 0dh
 			BYTE 219d, "(_)   (_|_______|_______|_______)  (_______|_______|_______|_)   (_|_______|_)   (_)", 0ah, 0dh
@@ -80,9 +80,11 @@ posicaoProt BYTE 18, 2																											; Posicao do Protagonista na te
 
 
 ; FOCO NO GABARITO
-gabaritoPosicaoBarril BYTE 6, 10
-posicaoBarril BYTE 6, 3, 6, -19, 6, -38, 6, -57																									; Posicao Barril
-direcaoBarril BYTE 0,0,0,0,0
+gabaritoPosicaoBarril BYTE 6, 2, 6, 22, 6, 42, 6, 62, 10, 62, 10, 42, 10, 25, 14, 25, 14, 42, 14, 62, 18,62, 18, 42
+gabaritoDirecaoBarril BYTE 0,0,0,0,1,1,1,0,0,0,1,1
+posicaoBarril BYTE 6, 2, 6, 22, 6, 42, 6, 62, 10, 62, 10, 42, 10, 25, 14, 25, 14, 42, 14, 62, 18,62, 18, 42 					; Posicao Barril
+direcaoBarril BYTE 0,0,0,0,1,1,1,0,0,0,1,1
+;6,62
 
 pontos BYTE "Pontuacao: ",0
 numeroPontos BYTE 0
@@ -91,13 +93,15 @@ numeroVidas BYTE 3
 
 testeBarril WORD 0
 
+nivel BYTE 1
+
 
 .code
 
 MoveBarril PROC
 		mov eax, yellow
 		call SetTextColor				;Escreve o barril de amarelo na tela
-		mov ecx, 4
+		mov ecx, 12
 		mov edi, 0
 		mov ebx, 0
 	
@@ -108,26 +112,14 @@ MoveBarril PROC
 		mov al, 20h
 		call WriteChar					;Apaga a escrita passada do barril na tela
 
-		cmp dl, 3
-		jge desenhoBarril
-		add [posicaoBarril+edi+1], 1
-		sub ecx, 1
-		cmp ecx, 0
-		je finalBarril	
-		add edi, 2
-		add ebx, 1
 
-	desenhoBarril:
 		cmp [posicaoBarril+edi], 18		;Checa se o obstaculo esta na ultima plataforma
 		jne continua
 		cmp [posicaoBarril+1+edi], 1	;Checa se o obstaculo esta na ultima posicao possivel
 		jne continua	
-		;mov dl, 6
-		;mov dh, 10
-		;dec ecx
-		;cmp ecx, 0
-		;je finalBarril
-		;jmp proximoBarril
+		mov [posicaoBarril+edi], 6
+		mov [posicaoBarril+1+edi], 3
+		mov [direcaoBarril+ebx], 0
 		jmp finalBarril					;Caso na ultima posicao vai para o retorno
 
 	continua:
@@ -203,18 +195,23 @@ MoveBarril PROC
 MoveBarril ENDP
 
 Colisao PROC
+		mov ecx, 11
+		mov edi, 0
+	linha:
 		mov al, [posicaoProt]
-		cmp [posicaoBarril], al
+		cmp [posicaoBarril+edi], al
 		jne naoColidiu
-		mov al, posicaoProt+1
-		cmp [posicaoBarril+1], al
+		mov al, [posicaoProt+1]
+		cmp [posicaoBarril+1+edi], al
 		jne naoColidiu
 		call DecrementaVida
 	naoColidiu:
+		add edi, 2
+		loop linha
 		ret
 Colisao ENDP
 
-TelaDerrota PROC
+TelaPerdeu PROC
 		call Clrscr
 		mov eax, red
 		call SetTextColor
@@ -225,11 +222,11 @@ TelaDerrota PROC
 		mov edx, OFFSET[telaDerrota]
 		call WriteString
 		ret
-TelaDerrota ENDP
+TelaPerdeu ENDP
 
-TelaVitoria PROC
+TelaGanhou PROC
 		call Clrscr
-		mov eax, blue
+		mov eax, green
 		call SetTextColor
 		call ImprimeMoldura
 		mov dh, 7
@@ -238,12 +235,12 @@ TelaVitoria PROC
 		mov edx, OFFSET[telaVitoria]
 		call WriteString
 		ret
-TelaVitoria ENDP
+TelaGanhou ENDP
 
 DecrementaVida PROC
 		cmp numeroVidas, 1
 		jne naoPerdeuJogo
-		call TelaDerrota
+		call TelaPerdeu
 		mov eax, 02000
 		call Delay
 		call LimpaTudo
@@ -269,10 +266,27 @@ LimpaTudo PROC
 		mov [posicaoProt], 18
 		mov [posicaoProt+1], 2
 		mov [posicaoBarril], 6
-		mov [posicaoBarril+1], 10
-		mov [direcaoBarril], 0
+		mov [nivel], 0
+		call PassaGabarito
 		ret
 LimpaTudo ENDP
+
+PassaGabarito PROC
+		mov edi, 0
+		mov edx, 0
+		mov ecx, 12
+	gabaritos:
+		mov bl, [gabaritoPosicaoBarril+edi]
+		mov [posicaoBarril+edi], bl
+		mov bl, [gabaritoPosicaoBarril+1+edi]
+		mov [direcaoBarril+1+edi], bl
+		mov bl, [gabaritoDirecaoBarril+edx]
+		mov [direcaoBarril+edx], bl
+		add edi,2
+		inc edx
+		loop gabaritos
+		ret
+PassaGabarito ENDP
 
 Pontuacao PROC
 		inc [numeroPontos]
@@ -294,13 +308,39 @@ AndarProtagonista PROC
 		call SetTextColor
 		mov al, 206					;Escreve o caracter que representa o protagonista 
 		call WriteChar  
+	
 	andar:
-		cmp [testeBarril], 010000
+		cmp nivel, 1
+		je nivel1
+		cmp nivel, 2
+		je nivel2
+		cmp nivel, 3
+		je nivel3
+	nivel1:
+		cmp [testeBarril], 03000
 		jne leitura
 		mov [testeBarril], 0
 		call Pontuacao
 		call MoveBarril
 		call Colisao
+		jmp leitura
+	nivel2:
+		cmp [testeBarril], 02000
+		jne leitura
+		mov [testeBarril], 0
+		call Pontuacao
+		call MoveBarril
+		call Colisao
+		jmp leitura
+	nivel3:
+		cmp [testeBarril], 01000
+		jne leitura
+		mov [testeBarril], 0
+		call Colisao
+		call Pontuacao
+		call MoveBarril
+		call Colisao
+		jmp leitura
 
 
 	leitura:
@@ -322,6 +362,16 @@ AndarProtagonista PROC
 		call GotoXY					;Posiciona o cursor na posicao do protagonista
 		mov al, 20h
 		call WriteChar				;Apaga o que esta escrito na posicao do protagonista
+
+		;cmp dh, 6
+		;jne outrostestes
+		;cmp dl, 10
+		;jne outrostestes
+		;add [nivel], 1
+		;call PassaGabarito
+		;jmp andar
+
+	outrostestes:
 		cmp dl, 27					;Se na coluna da escada pode continuar o teste
 		jne outradesce				;Se nao for deve saber se esta na coluna da outra escada
 		cmp dh, 10					;Se na linha da escada tambem a descida deve ocorrer 
@@ -656,7 +706,7 @@ ImprimeTelas PROC
 		call SetTextColor
 		call ImprimeMoldura
 		mov dh, 6
-		mov dl, 0
+		mov dl, 20
 		call Gotoxy
 		mov edx, OFFSET telaCreditos
 		call WriteString
@@ -670,6 +720,21 @@ ImprimeTelas ENDP
 main PROC	
 	
 	call ImprimeTelas
+
+		mov ecx, 11
+		mov edi, 0
+	linha:
+		mov al, [posicaoProt]
+		cmp [posicaoBarril+edi], al
+		jne naoColidiu
+		mov al, [posicaoProt+1]
+		cmp [posicaoBarril+1+edi], al
+		jne naoColidiu
+		call DecrementaVida
+	naoColidiu:
+		add edi,2
+		loop linha
+		ret
 
 	exit
 main ENDP 
