@@ -4,14 +4,12 @@
 ;				   R.A.: 628190
 ; Desenvolvimento iniciado em 03/11/2018
 
-;COLOCAR SOM
-;COLOCAR MUITOS BARRIS mais ou menos 15
-;COLOCAR NÍVEIS 
-;ARRUMAR CONTEUDO DAS TELAS
 
-INCLUDE Irvine32.inc
+INCLUDE Irvine32.inc	
 
 .data
+puloSom BYTE "pulo.wav",0
+
 telaTitulo	 BYTE 219d, " _______  ______ ______ _______ _______ ______  _       _     _     _     _ _______ _______ _______" , 0ah, 0dh 
 			 BYTE 219d, "(_______)/ _____) _____|_______|_______|____  \(_)     | |   | |   (_)   | (_______|_______|_______)", 0ah, 0dh
 			 BYTE 219d, " _______( (____( (____  _____   _  _  _ ____)  )_      | |___| |    _____| |_     _ _     _ _   ___ ", 0ah, 0dh
@@ -234,7 +232,12 @@ TelaGanhou PROC
 		call GotoXY
 		mov edx, OFFSET[telaVitoria]
 		call WriteString
-		ret
+		mov eax, 010000
+		call Delay
+		call LimpaTudo
+		mov eax, white
+		call SetTextColor
+		call ImprimeTelas
 TelaGanhou ENDP
 
 DecrementaVida PROC
@@ -317,6 +320,17 @@ AndarProtagonista PROC
 		cmp nivel, 3
 		je nivel3
 	nivel1:
+		cmp dh, 6
+		jne enivel1
+		cmp dl, 10
+		jne enivel1
+		add [nivel], 1
+		mov [posicaoProt], 18
+		mov dh, [posicaoProt]
+		mov [posicaoProt+1], 2
+		mov dl, [posicaoProt+1]
+		jmp andar
+	enivel1:
 		cmp [testeBarril], 03000
 		jne leitura
 		mov [testeBarril], 0
@@ -325,6 +339,17 @@ AndarProtagonista PROC
 		call Colisao
 		jmp leitura
 	nivel2:
+		cmp dh, 6
+		jne enivel2
+		cmp dl, 10
+		jne enivel2
+		add [nivel], 1
+		mov [posicaoProt], 18
+		mov dh, [posicaoProt]
+		mov [posicaoProt+1], 2
+		mov dl, [posicaoProt+1]
+		jmp andar
+	enivel2:
 		cmp [testeBarril], 02000
 		jne leitura
 		mov [testeBarril], 0
@@ -333,6 +358,12 @@ AndarProtagonista PROC
 		call Colisao
 		jmp leitura
 	nivel3:
+		cmp dh, 6
+		jne enivel3
+		cmp dl, 10
+		jne enivel3
+		call TelaGanhou
+	enivel3:
 		cmp [testeBarril], 01000
 		jne leitura
 		mov [testeBarril], 0
@@ -362,14 +393,6 @@ AndarProtagonista PROC
 		call GotoXY					;Posiciona o cursor na posicao do protagonista
 		mov al, 20h
 		call WriteChar				;Apaga o que esta escrito na posicao do protagonista
-
-		;cmp dh, 6
-		;jne outrostestes
-		;cmp dl, 10
-		;jne outrostestes
-		;add [nivel], 1
-		;call PassaGabarito
-		;jmp andar
 
 	outrostestes:
 		cmp dl, 27					;Se na coluna da escada pode continuar o teste
@@ -484,10 +507,11 @@ AndarProtagonista PROC
 		call SetTextColor
 		mov al, 206
 		call WriteChar
-		mov eax, 700
+		call MoveBarril
+		mov eax, 1000
 		call Delay
 		call MoveBarril
-		mov eax, 700
+		mov eax, 1000
 		call Delay
 		mov dh, [posicaoProt]
 		mov dl, [posicaoProt+1]
